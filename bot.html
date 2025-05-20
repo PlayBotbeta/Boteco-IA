@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Boteco IA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      margin: 0;
+      background: #0f0f0f;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      background: #ff6a00;
+      text-align: center;
+      padding: 1rem;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      letter-spacing: 2px;
+    }
+    #chat {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+    .msg {
+      margin: 1rem 0;
+    }
+    .user {
+      color: #66ff99;
+    }
+    .bot {
+      color: #00bfff;
+    }
+    form {
+      display: flex;
+      padding: 1rem;
+      background: #1a1a1a;
+    }
+    input {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.75rem 1rem;
+      margin-left: 0.5rem;
+      background: #ff6a00;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #bot-icon {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      width: 40px;
+      animation: blink 3s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.6); }
+    }
+  </style>
+</head>
+<body>
+  <img id="bot-icon" src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="bot"/>
+  <header>BOTECO IA</header>
+  <div id="chat"></div>
+  <form id="form">
+    <input id="input" autocomplete="off" placeholder="Digite sua pergunta..." />
+    <button type="submit">Enviar</button>
+  </form>
+  <script>
+    const chat = document.getElementById("chat");
+    const form = document.getElementById("form");
+    const input = document.getElementById("input");
+
+    const API_KEY = "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"; // <=== Cole aqui sua API Key
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const userMsg = document.createElement("div");
+      userMsg.className = "msg user";
+      userMsg.textContent = "Você: " + msg;
+      chat.appendChild(userMsg);
+
+      input.value = "";
+
+      const botMsg = document.createElement("div");
+      botMsg.className = "msg bot";
+      botMsg.textContent = "Boteco IA está pensando...";
+      chat.appendChild(botMsg);
+
+      try {
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${API_KEY}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-3.5-turbo",
+            messages: [
+              { role: "system", content: "Você é o Boteco IA, uma IA brasileira engraçada, útil e inteligente." },
+              { role: "user", content: msg }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        const resposta = data.choices?.[0]?.message?.content;
+        botMsg.textContent = "Boteco IA: " + (resposta || "Desculpe, não consegui responder.");
+      } catch (err) {
+        botMsg.textContent = "Erro ao conectar com a IA.";
+      }
+    });
+  </script>
+</body>
+</html>
